@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>러플의 쉬운 AI 창작 놀이터</title>
+  <style>
+    :root {
+      --bg-a: #fff7df;
+      --bg-b: #ddfbf6;
+      --bg-c: #f5efff;
+      --text: #172033;
+      --sub: #64748b;
+      --card: rgba(255, 255, 255, 0.78);
+      --line: rgba(23, 32, 51, 0.12);
+      --main: #6c63ff;
+      --pink: #ff6b9a;
+      --yellow: #ffc43d;
+      --mint: #76ead7;
+      --green: #b6f36c;
+      --shadow: 0 22px 60px rgba(70, 61, 190, 0.16);
+      --soft-shadow: 0 12px 28px rgba(15, 23, 42, 0.10);
+      --radius-xl: 34px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+      --focus: 0 0 0 5px rgba(108, 99, 255, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 11% 12%, rgba(255, 196, 61, 0.40), transparent 23%),
+        radial-gradient(circle at 88% 16%, rgba(118, 234, 215, 0.48), transparent 23%),
+        radial-gradient(circle at 78% 82%, rgba(255, 107, 154, 0.16), transparent 26%),
+        linear-gradient(135deg, var(--bg-a), var(--bg-b) 56%, var(--bg-c));
+      overflow-x: hidden;
+    }
+
+    body.visual-mode {
+      --bg-a: #000000;
+      --bg-b: #000000;
+      --bg-c: #000000;
+      --text: #ffffff;
+      --sub: #ffffff;
+      --card: #000000;
+      --line: rgba(255, 255, 255, 0.72);
+      --main: #ffffff;
+      --pink: #ffffff;
+      --yellow: #ffffff;
+      --mint: #ffffff;
+      --green: #ffffff;
+      --shadow: 0 0 0 2px #ffffff;
+      --soft-shadow: 0 0 0 2px #ffffff;
+      --focus: 0 0 0 5px rgba(255, 255, 255, 0.55);
+      background: #000000;
+    }
+
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--focus); }
+
+    .orb {
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      border-radius: 999px;
+      opacity: 0.78;
+      animation: pulseFloat 5.4s ease-in-out infinite;
+      box-shadow: inset -18px -18px 30px rgba(15, 23, 42, 0.10), inset 12px 12px 22px rgba(255, 255, 255, 0.50), 0 24px 56px rgba(15, 23, 42, 0.12);
+    }
+
+    .orb-a { width: 118px; height: 118px; left: 5%; top: 14%; background: var(--yellow); }
+    .orb-b { width: 70px; height: 70px; right: 8%; top: 22%; background: var(--mint); animation-delay: -1.3s; }
+    .orb-c { width: 76px; height: 76px; left: 8%; bottom: 18%; background: var(--pink); animation-delay: -2.2s; }
+    .orb-d { width: 134px; height: 134px; right: 6%; bottom: 8%; background: var(--mint); opacity: 0.58; animation-delay: -3.2s; }
+    .orb-e { width: 38px; height: 38px; left: 2%; top: 50%; background: var(--green); animation-delay: -4s; }
+    .orb-f { width: 42px; height: 42px; right: 26%; top: 39%; background: var(--mint); animation-delay: -2.8s; }
+    .orb-g { width: 64px; height: 64px; right: 2%; top: 64%; background: var(--yellow); animation-delay: -1.9s; }
+
+    body.visual-mode .orb {
+      background: #ffffff !important;
+      opacity: 0.22;
+      box-shadow: 0 0 0 2px #ffffff, 0 0 32px rgba(255, 255, 255, 0.48);
+    }
+
+    @keyframes pulseFloat {
+      0%, 100% { transform: translateY(0) scale(0.88); }
+      50% { transform: translateY(-18px) scale(1.12); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .orb, .tile, .float-chip { animation: none !important; }
+      .view.active { animation: none !important; }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 14px 0 64px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding: 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.86);
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(18px);
+    }
+
+    body.visual-mode .topbar {
+      background: #000000;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 950;
+      letter-spacing: -0.045em;
+      font-size: clamp(18px, 2vw, 24px);
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      color: #4538e8;
+      background: linear-gradient(145deg, #ffffff, #e7e2ff);
+      box-shadow: var(--soft-shadow), inset 7px 7px 14px rgba(255,255,255,0.82), inset -8px -8px 18px rgba(108,99,255,0.16);
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    body.visual-mode .brand-mark {
+      color: #ffffff;
+      background: #000000;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      min-height: 48px;
+      padding: 12px 17px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--text);
+      font-weight: 950;
+      letter-spacing: -0.035em;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    .pill:hover { transform: translateY(-1px); filter: brightness(1.02); }
+
+    .pill.primary {
+      color: #ffffff;
+      border: 0;
+      background: linear-gradient(135deg, #6c63ff, #ff6b9a);
+      box-shadow: 0 12px 24px rgba(108, 99, 255, 0.22);
+    }
+
+    .pill.visual-top {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #000000;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+    }
+
+    .pill.develop-top[aria-pressed="true"] {
+      background: #172033;
+      color: #ffffff;
+      border-color: #172033;
+    }
+
+    body.visual-mode .pill,
+    body.visual-mode .pill.primary,
+    body.visual-mode .pill.visual-top,
+    body.visual-mode .pill.develop-top,
+    body.visual-mode .pill[aria-pressed="true"] {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; animation: viewIn 0.36s ease both; }
+
+    @keyframes viewIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .landing-hero {
+      position: relative;
+      min-height: 660px;
+      padding: clamp(42px, 7vw, 88px) clamp(20px, 4vw, 52px);
+      border-radius: 46px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.38);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    body.visual-mode .landing-hero,
+    body.visual-mode .soft-section,
+    body.visual-mode .builder-panel,
+    body.visual-mode .result-panel,
+    body.visual-mode .guide-card,
+    body.visual-mode .choice-card {
+      background: #000000;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      max-width: 1040px;
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 11px 15px;
+      border-radius: 999px;
+      color: #4538e8;
+      background: rgba(108, 99, 255, 0.10);
+      font-weight: 950;
+      letter-spacing: -0.035em;
+    }
+
+    body.visual-mode .label {
+      color: #ffffff;
+      background: #000000;
+      border: 2px solid #ffffff;
+    }
+
+    h1, h2, h3, p { word-break: keep-all; overflow-wrap: normal; }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(44px, 5.6vw, 78px);
+      line-height: 1.18;
+      letter-spacing: -0.075em;
+      font-weight: 950;
+    }
+
+    .one-line { white-space: nowrap; }
+
+    .hero-title-point {
+      display: inline-block;
+      background: linear-gradient(135deg, #4538e8, #ff4d91);
+      color: transparent;
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    body.visual-mode .hero-title-point {
+      color: #ffffff;
+      background: none;
+      -webkit-background-clip: initial;
+      background-clip: initial;
+    }
+
+    .hero-desc {
+      max-width: 870px;
+      margin: 24px 0 0;
+      color: var(--sub);
+      font-size: clamp(19px, 2vw, 25px);
+      line-height: 1.76;
+      letter-spacing: -0.034em;
+      font-weight: 770;
+    }
+
+    .landing-sample {
+      position: relative;
+      z-index: 2;
+      width: min(760px, 100%);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .landing-sample input {
+      width: 100%;
+      min-height: 62px;
+      border-radius: 22px;
+      border: 2px solid rgba(108, 99, 255, 0.16);
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--text);
+      padding: 16px 18px;
+      font-size: 19px;
+      font-weight: 850;
+      letter-spacing: -0.03em;
+    }
+
+    .sample-button, .round-button, .make-button, .refine-button, .copy-button {
+      min-height: 56px;
+      border: 0;
+      border-radius: 20px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #6c63ff, #ff6b9a);
+      box-shadow: 0 14px 28px rgba(108, 99, 255, 0.22);
+      font-weight: 950;
+      letter-spacing: -0.035em;
+      transition: transform 0.16s ease, filter 0.16s ease;
+    }
+
+    .sample-button:hover, .round-button:hover, .make-button:hover, .refine-button:hover, .copy-button:hover { transform: translateY(-2px); filter: brightness(1.02); }
+
+    body.visual-mode input,
+    body.visual-mode textarea,
+    body.visual-mode .sample-button,
+    body.visual-mode .round-button,
+    body.visual-mode .make-button,
+    body.visual-mode .refine-button,
+    body.visual-mode .copy-button {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .hero-cloud {
+      position: absolute;
+      right: clamp(16px, 5vw, 70px);
+      bottom: clamp(26px, 6vw, 80px);
+      width: min(440px, 40vw);
+      min-height: 320px;
+      z-index: 1;
+    }
+
+    .tile {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      border-radius: 32px;
+      color: #172033;
+      font-size: clamp(20px, 2.2vw, 34px);
+      font-weight: 950;
+      letter-spacing: -0.06em;
+      box-shadow: inset 10px 10px 20px rgba(255,255,255,0.55), inset -12px -12px 22px rgba(15,23,42,0.10), 0 18px 40px rgba(15,23,42,0.12);
+      animation: gentleBob 4.5s ease-in-out infinite;
+    }
+
+    .tile.poem { width: 136px; height: 118px; left: 18px; top: 20px; background: linear-gradient(145deg, #fff1b8, #ffc43d); }
+    .tile.image { width: 154px; height: 132px; right: 28px; top: 0; background: linear-gradient(145deg, #cffff8, #76ead7); animation-delay: -1.1s; }
+    .tile.song { width: 132px; height: 122px; left: 96px; bottom: 28px; background: linear-gradient(145deg, #ffe0ea, #ff6b9a); animation-delay: -2.1s; }
+    .tile.video { width: 118px; height: 104px; right: 0; bottom: 52px; background: linear-gradient(145deg, #e9e5ff, #8e86ff); animation-delay: -3s; }
+
+    body.visual-mode .tile {
+      background: #000000 !important;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    @keyframes gentleBob {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50% { transform: translateY(-13px) rotate(2deg); }
+    }
+
+    .soft-section {
+      margin-top: 26px;
+      padding: clamp(28px, 4vw, 46px);
+      border-radius: 38px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .section-head {
+      max-width: 1040px;
+      margin: 0 auto 24px;
+      text-align: center;
+    }
+
+    .section-kicker {
+      color: #4538e8;
+      font-weight: 950;
+      letter-spacing: -0.035em;
+      margin-bottom: 10px;
+    }
+
+    body.visual-mode .section-kicker { color: #ffffff; }
+
+    .big-title {
+      margin: 0;
+      font-size: clamp(30px, 3.9vw, 50px);
+      line-height: 1.24;
+      letter-spacing: -0.067em;
+      font-weight: 950;
+    }
+
+    .big-desc {
+      margin: 14px auto 0;
+      max-width: 880px;
+      color: var(--sub);
+      font-size: clamp(17px, 1.7vw, 21px);
+      line-height: 1.72;
+      letter-spacing: -0.03em;
+      font-weight: 760;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .flow-card, .prompt-note {
+      position: relative;
+      padding: 22px;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.64);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    body.visual-mode .flow-card,
+    body.visual-mode .prompt-note {
+      background: #000000;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .illustration {
+      min-height: 132px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 26px;
+      color: #172033;
+      font-size: 46px;
+      font-weight: 950;
+      letter-spacing: -0.06em;
+      box-shadow: inset 10px 10px 22px rgba(255,255,255,0.76), inset -12px -12px 22px rgba(15,23,42,0.09), 0 14px 30px rgba(15,23,42,0.08);
+    }
+
+    .illustration.yellow { background: linear-gradient(145deg, #fff5c7, #ffc43d); }
+    .illustration.mint { background: linear-gradient(145deg, #dcfff9, #76ead7); }
+    .illustration.pink { background: linear-gradient(145deg, #ffe3ec, #ff6b9a); }
+
+    body.visual-mode .illustration {
+      background: #000000 !important;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .flow-card strong {
+      display: block;
+      margin-bottom: 9px;
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: -0.045em;
+    }
+
+    .flow-card p {
+      margin: 0;
+      color: var(--sub);
+      line-height: 1.65;
+      font-weight: 750;
+      letter-spacing: -0.028em;
+    }
+
+    .prompt-mix {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.92fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .prompt-example {
+      height: 100%;
+      padding: 24px;
+      border-radius: 28px;
+      background: #111827;
+      color: #ffffff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 18px 44px rgba(15, 23, 42, 0.22);
+    }
+
+    .prompt-line {
+      margin: 0;
+      font-size: clamp(19px, 2.2vw, 25px);
+      line-height: 1.72;
+      letter-spacing: -0.04em;
+      font-weight: 900;
+    }
+
+    .prompt-line span { color: #ffdf6b; }
+
+    body.visual-mode .prompt-example {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    body.visual-mode .prompt-line span { color: #ffffff; text-decoration: underline; }
+
+    .prompt-steps {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .prompt-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      line-height: 1.55;
+      font-weight: 820;
+      letter-spacing: -0.03em;
+    }
+
+    body.visual-mode .prompt-step {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+    }
+
+    .step-number {
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #172033;
+      color: #ffffff;
+      font-weight: 950;
+    }
+
+    body.visual-mode .step-number {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .mega-start {
+      width: 100%;
+      min-height: 104px;
+      margin-top: 26px;
+      border: 0;
+      border-radius: 32px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #6c63ff, #ff6b9a 58%, #ffc43d);
+      box-shadow: 0 22px 50px rgba(108, 99, 255, 0.28), inset 0 2px 0 rgba(255,255,255,0.28);
+      font-size: clamp(25px, 3.8vw, 42px);
+      font-weight: 950;
+      letter-spacing: -0.06em;
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .mega-start:hover { transform: translateY(-3px); filter: brightness(1.02); }
+
+    body.visual-mode .mega-start {
+      background: #ffffff;
+      color: #000000;
+      border: 3px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .choice-card {
+      min-height: 270px;
+      padding: clamp(24px, 3vw, 36px);
+      border-radius: 34px;
+      text-align: left;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(255,255,255,0.84);
+      box-shadow: var(--shadow);
+      transition: transform 0.18s ease, filter 0.18s ease;
+    }
+
+    .choice-card:hover { transform: translateY(-4px); filter: brightness(1.02); }
+
+    .choice-card.visual-choice {
+      background: #000000;
+      color: #ffffff;
+      border: 3px solid #ffffff;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+    }
+
+    .choice-card.develop-choice {
+      background: linear-gradient(145deg, rgba(255,255,255,0.90), rgba(236,232,255,0.88));
+    }
+
+    .choice-icon {
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.82);
+      color: #4538e8;
+      font-size: 32px;
+      font-weight: 950;
+      box-shadow: inset 7px 7px 16px rgba(255,255,255,0.72), inset -10px -10px 20px rgba(15,23,42,0.10);
+    }
+
+    .visual-choice .choice-icon {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .choice-card h3 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 3.2vw, 42px);
+      line-height: 1.16;
+      letter-spacing: -0.068em;
+      font-weight: 950;
+    }
+
+    .choice-card p {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.68;
+      letter-spacing: -0.03em;
+      font-weight: 760;
+      color: inherit;
+      opacity: 0.92;
+    }
+
+    .builder-stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .builder-panel, .result-panel, .guide-card {
+      padding: clamp(22px, 3vw, 36px);
+      border-radius: 34px;
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: clamp(26px, 3vw, 38px);
+      line-height: 1.24;
+      letter-spacing: -0.06em;
+      font-weight: 950;
+    }
+
+    .section-help {
+      margin: 0 0 18px;
+      color: var(--sub);
+      font-size: clamp(17px, 1.8vw, 21px);
+      line-height: 1.72;
+      letter-spacing: -0.028em;
+      font-weight: 760;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 166px;
+      resize: vertical;
+      margin-bottom: 12px;
+      border: 2px solid rgba(108, 99, 255, 0.16);
+      border-radius: 26px;
+      padding: 20px;
+      background: rgba(255,255,255,0.88);
+      color: var(--text);
+      font-size: 24px;
+      line-height: 1.58;
+      font-weight: 850;
+      letter-spacing: -0.035em;
+      box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    textarea::placeholder { color: #94a3b8; }
+    body.visual-mode textarea::placeholder { color: #ffffff; opacity: 0.76; }
+
+    .voice-button {
+      width: 100%;
+      min-height: 62px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,0.76);
+      color: var(--text);
+      box-shadow: 0 9px 18px rgba(15, 23, 42, 0.07);
+      font-size: 19px;
+      font-weight: 950;
+      letter-spacing: -0.035em;
+    }
+
+    .voice-button.is-recording { background: #ffe4ec; color: #be123c; }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .mode-button {
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 10px;
+      border: 2px solid transparent;
+      border-radius: 24px;
+      color: var(--text);
+      background: linear-gradient(145deg, rgba(255,255,255,0.94), rgba(238,234,255,0.76));
+      box-shadow: var(--soft-shadow), inset 6px 6px 12px rgba(255,255,255,0.8), inset -8px -8px 18px rgba(108,99,255,0.12);
+      font-size: 18px;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+
+    .mode-button[aria-pressed="true"] {
+      border-color: #4538e8;
+      background: linear-gradient(145deg, #f9f8ff, #ddd9ff);
+      box-shadow: 0 16px 32px rgba(108,99,255,0.20), inset 6px 6px 12px rgba(255,255,255,0.82), inset -8px -8px 18px rgba(108,99,255,0.15);
+    }
+
+    .button-icon {
+      min-width: 48px;
+      min-height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      color: #4538e8;
+      background: rgba(255,255,255,0.62);
+      font-size: 21px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    body.visual-mode .mode-button,
+    body.visual-mode .mode-button[aria-pressed="true"],
+    body.visual-mode .voice-button {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    body.visual-mode .button-icon {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+    }
+
+    .make-button {
+      width: 100%;
+      min-height: 76px;
+      font-size: 25px;
+    }
+
+    .small-note {
+      margin: 12px 0 0;
+      color: var(--sub);
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 730;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .result-badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255, 196, 61, 0.22);
+      color: #92400e;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    body.visual-mode .result-badge {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+    }
+
+    .output {
+      min-height: 300px;
+      padding: 24px;
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      background: linear-gradient(145deg, #ffffff, #f8fbff);
+      box-shadow: inset 0 2px 8px rgba(15,23,42,0.04);
+      white-space: pre-wrap;
+      color: var(--text);
+      font-size: 22px;
+      line-height: 1.78;
+      letter-spacing: -0.035em;
+      font-weight: 780;
+    }
+
+    body.visual-mode .output {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+      box-shadow: none;
+    }
+
+    .empty-state {
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: #94a3b8;
+      font-weight: 950;
+    }
+
+    body.visual-mode .empty-state { color: #ffffff; }
+
+    .refine-title {
+      margin: 22px 0 10px;
+      font-size: 20px;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+
+    .refine-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+
+    .refine-button {
+      padding: 13px 10px;
+      background: rgba(255,255,255,0.80);
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: 0 9px 18px rgba(15,23,42,0.07);
+      font-size: 16px;
+    }
+
+    .copy-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .copy-button {
+      flex: 1 1 190px;
+      padding: 15px;
+      background: #172033;
+      color: #ffffff;
+      font-size: 17px;
+    }
+
+    .copy-button.secondary {
+      background: #ffffff;
+      color: #172033;
+      border: 1px solid var(--line);
+      box-shadow: 0 9px 18px rgba(15,23,42,0.07);
+    }
+
+    .guide {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .guide-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 22px;
+      font-weight: 950;
+      letter-spacing: -0.045em;
+    }
+
+    .guide-card p {
+      margin: 0;
+      color: var(--sub);
+      font-weight: 750;
+      line-height: 1.65;
+      letter-spacing: -0.025em;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      z-index: 60;
+      transform: translateX(-50%) translateY(120px);
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: #172033;
+      color: #ffffff;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.24);
+      font-weight: 950;
+      letter-spacing: -0.03em;
+      text-align: center;
+      transition: transform 0.25s ease;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    body.visual-mode .toast { background: #ffffff; color: #000000; }
+
+    .hidden { display: none !important; }
+
+    body.big-mode .page { width: min(1160px, calc(100% - 24px)); }
+    body.big-mode h1 { font-size: clamp(48px, 5.8vw, 86px); }
+    body.big-mode .hero-desc,
+    body.big-mode .big-desc,
+    body.big-mode .section-help,
+    body.big-mode .choice-card p { font-size: 24px; line-height: 1.84; }
+    body.big-mode textarea,
+    body.big-mode .output { font-size: 29px; line-height: 1.88; }
+    body.big-mode .pill,
+    body.big-mode .mode-button,
+    body.big-mode .voice-button,
+    body.big-mode .refine-button { font-size: 21px; min-height: 68px; }
+    body.big-mode .mode-button { min-height: 132px; }
+
+    @media (max-width: 1120px) {
+      .one-line { white-space: normal; }
+      .hero-cloud { position: relative; right: auto; bottom: auto; width: min(520px, 100%); min-height: 320px; margin: 34px auto 0; }
+      .mode-grid, .refine-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .topbar { border-radius: 28px; align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; justify-content: flex-start; }
+      .flow-grid, .prompt-mix, .choice-grid, .guide { grid-template-columns: 1fr; }
+      .landing-sample { grid-template-columns: 1fr; }
+      .landing-hero { min-height: auto; }
+    }
+
+    @media (max-width: 560px) {
+      .page { width: min(100% - 22px, 1220px); padding-top: 12px; }
+      .brand { white-space: normal; }
+      .top-actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .pill { width: 100%; padding: 11px; }
+      .landing-hero, .soft-section, .builder-panel, .result-panel, .guide-card { padding: 20px; border-radius: 28px; }
+      .mode-grid, .refine-grid { grid-template-columns: 1fr 1fr; }
+      .hero-cloud { min-height: 260px; }
+      .tile.poem { width: 120px; height: 100px; left: 0; }
+      .tile.image { width: 130px; height: 110px; right: 0; }
+      .tile.song { width: 116px; height: 104px; left: 58px; bottom: 10px; }
+      .tile.video { width: 104px; height: 92px; right: 20px; bottom: 34px; }
+    }
+  </style>
+</head>
+<body class="develop-mode">
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+  <div class="orb orb-c" aria-hidden="true"></div>
+  <div class="orb orb-d" aria-hidden="true"></div>
+  <div class="orb orb-e" aria-hidden="true"></div>
+  <div class="orb orb-f" aria-hidden="true"></div>
+  <div class="orb orb-g" aria-hidden="true"></div>
+
+  <main class="page">
+    <header class="topbar">
+      <button class="brand" id="homeButton" aria-label="홈으로 이동">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>러플의 쉬운 AI 창작 놀이터</span>
+      </button>
+      <nav class="top-actions" aria-label="상단 메뉴">
+        <button class="pill primary" id="quickStartButton">바로 시작하기</button>
+        <button class="pill visual-top" id="visualModeButton" aria-pressed="false">시각장애용</button>
+        <button class="pill develop-top" id="developModeButton" aria-pressed="true">발달장애용</button>
+        <button class="pill" id="bigModeButton" aria-pressed="false">글자 크게</button>
+      </nav>
+    </header>
+
+    <section class="view active" id="landingPage" aria-label="랜딩 페이지">
+      <div class="landing-hero">
+        <div class="hero-copy">
+          <div class="label">아이디어가 작품이 되는 곳</div>
+          <h1><span class="one-line">단어만 넣으면 <span class="hero-title-point">AI가 같이 만들어요</span></span></h1>
+          <p class="hero-desc">말하거나 글로 적은 단어를 시, 이야기, 그림 설명, 노래 가사, 영상 콘티, 캐릭터로 바꿔요. 어려운 문장을 쓰지 않아도 괜찮아요. AI는 내가 적은 단어를 보고 작품의 시작을 함께 만들어줍니다.</p>
+          <div class="landing-sample" aria-label="랜딩페이지 예시 입력">
+            <input id="landingSampleInput" type="text" value="우주, 고양이, 외로움" aria-label="예시 단어" />
+            <button class="sample-button" id="sampleButton">예시 넣기</button>
+          </div>
+        </div>
+        <div class="hero-cloud" aria-hidden="true">
+          <div class="tile poem">시</div>
+          <div class="tile image">그림</div>
+          <div class="tile song">노래</div>
+          <div class="tile video">영상</div>
+        </div>
+      </div>
+
+      <section class="soft-section" aria-label="사용 방법 설명">
+        <div class="section-head">
+          <div class="section-kicker">어떻게 만들까요?</div>
+          <h2 class="big-title"><span class="one-line">단어를 고르고, 버튼을 누르고, 조금씩 완성해요</span></h2>
+          <p class="big-desc">아이들이 이해하기 쉬운 순서로 창작 과정을 나누었습니다. 먼저 단어를 넣고, 만들고 싶은 작품을 고른 뒤, 아래 버튼으로 더 쉽고 예쁘게 다듬습니다.</p>
+        </div>
+        <div class="flow-grid">
+          <article class="flow-card">
+            <div class="illustration yellow">단어</div>
+            <strong>1. 단어 넣기</strong>
+            <p>생각나는 단어를 적거나 말해요. 쉼표나 스페이스바로 단어를 나누면 AI가 더 잘 이해해요.</p>
+          </article>
+          <article class="flow-card">
+            <div class="illustration mint">선택</div>
+            <strong>2. 작품 고르기</strong>
+            <p>시, 이야기, 그림 설명, 노래 가사, 영상 콘티, 캐릭터 중에서 만들고 싶은 것을 고릅니다.</p>
+          </article>
+          <article class="flow-card">
+            <div class="illustration pink">완성</div>
+            <strong>3. 더 좋게 바꾸기</strong>
+            <p>더 쉽게, 더 자세히, 더 따뜻하게 같은 버튼을 눌러 결과물을 천천히 완성합니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="soft-section" aria-label="AI 프롬프팅 소개">
+        <div class="prompt-mix">
+          <div>
+            <div class="section-kicker">AI 프롬프팅이란?</div>
+            <h2 class="big-title"><span class="one-line">AI에게 부탁하는 쉬운 말이에요</span></h2>
+            <p class="big-desc">프롬프팅은 AI에게 “이렇게 만들어줘”라고 알려주는 말입니다. 길게 쓰지 않아도 됩니다. 단어, 느낌, 색깔, 원하는 결과를 조금씩 알려주면 됩니다.</p>
+            <div class="prompt-steps">
+              <div class="prompt-step"><span class="step-number">1</span><span>먼저 생각나는 단어를 넣어요.</span></div>
+              <div class="prompt-step"><span class="step-number">2</span><span>기분이나 느낌을 고르면 더 좋아요.</span></div>
+              <div class="prompt-step"><span class="step-number">3</span><span>AI가 만든 결과를 버튼으로 다시 고쳐요.</span></div>
+            </div>
+          </div>
+          <div class="prompt-example">
+            <p class="prompt-line"><span>단어</span> : 우주, 고양이, 외로움</p>
+            <p class="prompt-line"><span>느낌</span> : 따뜻하게, 조용하게</p>
+            <p class="prompt-line"><span>결과</span> : 짧은 시로 만들어줘</p>
+          </div>
+        </div>
+        <button class="mega-start" id="megaStartButton">나만의 창작 작품 만들러 가기</button>
+      </section>
+    </section>
+
+    <section class="view" id="choicePage" aria-label="모드 선택 페이지">
+      <section class="soft-section">
+        <div class="section-head">
+          <div class="section-kicker">먼저 화면을 선택해주세요</div>
+          <h2 class="big-title">나에게 편한 방식으로 시작해요</h2>
+          <p class="big-desc">시각장애용은 검정 배경과 흰색 글자로 가독성을 높였습니다. 발달장애용은 밝은 색감과 큰 버튼으로 쉽게 사용할 수 있게 만들었습니다.</p>
+        </div>
+        <div class="choice-grid">
+          <button class="choice-card visual-choice" id="chooseVisualButton">
+            <div class="choice-icon">○</div>
+            <h3>시각장애용</h3>
+            <p>검정 배경, 흰색 글씨, 큰 글자, 또렷한 버튼으로 창작 페이지를 엽니다.</p>
+          </button>
+          <button class="choice-card develop-choice" id="chooseDevelopButton">
+            <div class="choice-icon">✦</div>
+            <h3>발달장애용</h3>
+            <p>밝은 색, 쉬운 말, 큰 버튼, 천천히 완성하는 구조로 창작 페이지를 엽니다.</p>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <section class="view" id="creatorPage" aria-label="창작 제작 페이지">
+      <div class="builder-stack">
+        <section class="builder-panel" aria-label="단어 입력과 작품 선택">
+          <h2 class="section-title">1. 만들고 싶은 단어를 넣어주세요</h2>
+          <p class="section-help">짧게 적어도 괜찮아요. 예: 우주, 고양이, 바다, 친구, 기분 좋은 날. 쉼표를 적거나 스페이스바를 눌러 단어를 나눠주세요.</p>
+          <textarea id="ideaInput" aria-label="아이디어 입력" placeholder="예: 우주, 고양이, 외로움"></textarea>
+          <button class="voice-button" id="voiceButton"><span class="button-icon">말</span> 말로 넣기</button>
+
+          <h2 class="section-title">2. 무엇으로 만들까요?</h2>
+          <p class="section-help">원하는 작품 버튼을 눌러주세요.</p>
+          <div class="mode-grid" role="group" aria-label="작품 종류 선택">
+            <button class="mode-button" data-mode="poem" aria-pressed="true"><span class="button-icon">시</span><span>시</span></button>
+            <button class="mode-button" data-mode="story" aria-pressed="false"><span class="button-icon">글</span><span>이야기</span></button>
+            <button class="mode-button" data-mode="image" aria-pressed="false"><span class="button-icon">그림</span><span>그림 설명</span></button>
+            <button class="mode-button" data-mode="lyrics" aria-pressed="false"><span class="button-icon">노래</span><span>노래 가사</span></button>
+            <button class="mode-button" data-mode="video" aria-pressed="false"><span class="button-icon">영상</span><span>영상 콘티</span></button>
+            <button class="mode-button" data-mode="character" aria-pressed="false"><span class="button-icon">캐릭터</span><span>캐릭터 만들기</span></button>
+          </div>
+          <button class="make-button" id="makeButton">같이 만들기</button>
+          <p class="small-note">현재 화면은 웹페이지 흐름을 확인하는 프로토타입입니다. 실제 AI 결과 생성은 이후 API 서버를 연결하면 됩니다.</p>
+        </section>
+
+        <section class="result-panel" aria-label="결과 영역">
+          <div class="result-header">
+            <div>
+              <h2 class="section-title">3. 나온 결과</h2>
+              <p class="section-help">마음에 들 때까지 아래 버튼으로 고쳐보세요.</p>
+            </div>
+            <div class="result-badge" id="resultBadge">시</div>
+          </div>
+          <div class="output" id="output" aria-live="polite">
+            <div class="empty-state">위에서 단어를 넣고 작품을 만들어보세요.</div>
+          </div>
+          <div id="refineArea" class="hidden">
+            <div class="refine-title">더 좋게 바꾸기</div>
+            <div class="refine-grid">
+              <button class="refine-button" data-refine="easy">더 쉽게</button>
+              <button class="refine-button" data-refine="detail">더 자세히</button>
+              <button class="refine-button" data-refine="warm">더 따뜻하게</button>
+              <button class="refine-button" data-refine="short">더 짧게</button>
+              <button class="refine-button" data-refine="color">색감 넣기</button>
+              <button class="refine-button" data-refine="next">다음 단계</button>
+            </div>
+            <div class="copy-row">
+              <button class="copy-button" id="copyButton">결과 복사하기</button>
+              <button class="copy-button secondary" id="resetButton">처음부터 다시</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="guide" aria-label="사용 원칙">
+          <article class="guide-card">
+            <strong>큰 버튼</strong>
+            <p>누르기 쉽게 버튼을 크게 만들었어요. 글자도 또렷하게 보이도록 했어요.</p>
+          </article>
+          <article class="guide-card">
+            <strong>쉬운 말</strong>
+            <p>어려운 단어보다 짧고 쉬운 문장을 먼저 보여줘요.</p>
+          </article>
+          <article class="guide-card">
+            <strong>천천히 완성</strong>
+            <p>한 번에 끝내지 않고, 버튼을 눌러 조금씩 작품을 다듬어요.</p>
+          </article>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">복사했어요.</div>
+
+  <script>
+    const state = {
+      mode: "poem",
+      selectedAccessMode: "develop",
+      result: "",
+      idea: ""
+    };
+
+    const modeLabels = {
+      poem: "시",
+      story: "이야기",
+      image: "그림 설명",
+      lyrics: "노래 가사",
+      video: "영상 콘티",
+      character: "캐릭터 만들기"
+    };
+
+    const samples = [
+      "우주, 고양이, 외로움",
+      "바다, 친구, 기분 좋은 날",
+      "분홍색 구름, 춤추는 아이",
+      "작은 새, 용기, 꿈",
+      "달빛 기차, 신나는 여행"
+    ];
+
+    const $ = (id) => document.getElementById(id);
+
+    const landingPage = $("landingPage");
+    const choicePage = $("choicePage");
+    const creatorPage = $("creatorPage");
+    const homeButton = $("homeButton");
+    const quickStartButton = $("quickStartButton");
+    const visualModeButton = $("visualModeButton");
+    const developModeButton = $("developModeButton");
+    const bigModeButton = $("bigModeButton");
+    const megaStartButton = $("megaStartButton");
+    const chooseVisualButton = $("chooseVisualButton");
+    const chooseDevelopButton = $("chooseDevelopButton");
+    const landingSampleInput = $("landingSampleInput");
+    const sampleButton = $("sampleButton");
+    const ideaInput = $("ideaInput");
+    const voiceButton = $("voiceButton");
+    const makeButton = $("makeButton");
+    const output = $("output");
+    const resultBadge = $("resultBadge");
+    const refineArea = $("refineArea");
+    const copyButton = $("copyButton");
+    const resetButton = $("resetButton");
+    const toast = $("toast");
+
+    function showPage(pageName) {
+      [landingPage, choicePage, creatorPage].forEach((page) => page.classList.remove("active"));
+      if (pageName === "choice") choicePage.classList.add("active");
+      else if (pageName === "creator") creatorPage.classList.add("active");
+      else landingPage.classList.add("active");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function setAccessMode(mode) {
+      state.selectedAccessMode = mode;
+      document.body.classList.toggle("visual-mode", mode === "visual");
+      document.body.classList.toggle("develop-mode", mode === "develop");
+      visualModeButton.setAttribute("aria-pressed", String(mode === "visual"));
+      developModeButton.setAttribute("aria-pressed", String(mode === "develop"));
+    }
+
+    function openCreator(mode) {
+      setAccessMode(mode);
+      const sample = landingSampleInput.value.trim();
+      if (sample && !ideaInput.value.trim()) ideaInput.value = sample;
+      showPage("creator");
+      window.setTimeout(() => ideaInput.focus(), 360);
+    }
+
+    homeButton.addEventListener("click", () => showPage("landing"));
+    quickStartButton.addEventListener("click", () => showPage("choice"));
+    megaStartButton.addEventListener("click", () => showPage("choice"));
+    visualModeButton.addEventListener("click", () => openCreator("visual"));
+    developModeButton.addEventListener("click", () => openCreator("develop"));
+    chooseVisualButton.addEventListener("click", () => openCreator("visual"));
+    chooseDevelopButton.addEventListener("click", () => openCreator("develop"));
+
+    bigModeButton.addEventListener("click", () => {
+      const isBig = document.body.classList.toggle("big-mode");
+      bigModeButton.setAttribute("aria-pressed", String(isBig));
+      bigModeButton.textContent = isBig ? "기본 글자" : "글자 크게";
+    
